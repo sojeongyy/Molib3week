@@ -1,58 +1,8 @@
-// const passport = require('passport');
-// const KakaoStrategy = require('passport-kakao').Strategy;
-// const User = require('../models/User');
 
-// // ✅ CommonJS 방식으로 내보내기
-// module.exports = (app) => {
-//     // ✅ Passport 초기화
-//     app.use(passport.initialize());
-//     app.use(passport.session());
-
-//     // ✅ KakaoStrategy 설정
-//     passport.use(new KakaoStrategy({
-//             clientID: process.env.KAKAO_CLIENT_ID,
-//             callbackURL: process.env.KAKAO_REDIRECT_URI
-//         },
-//         async (accessToken, refreshToken, profile, done) => {
-//             try {
-//                 const exUser = await User.findOne({ snsId: profile.id });
-//                 if (exUser) {
-//                     return done(null, exUser);
-//                 } else {
-//                     const newUser = await User.create({
-//                         email: profile._json.kakao_account.email,
-//                         nickname: profile.displayName,
-//                         snsId: profile.id,
-//                         providerType: 'kakao',
-//                     });
-//                     return done(null, newUser);
-//                 }
-//             } catch (error) {
-//                 console.error(error);
-//                 return done(error);
-//             }
-//         }
-//     ));
-
-//     // ✅ 세션 직렬화 (serializeUser)
-//     passport.serializeUser((user, done) => {
-//         done(null, user.id);
-//     });
-
-//     // ✅ 세션 역직렬화 (deserializeUser)
-//     passport.deserializeUser(async (id, done) => {
-//         try {
-//             const user = await User.findById(id);
-//             done(null, user);
-//         } catch (error) {
-//             done(error);
-//         }
-//     });
-// };
 
 const passport = require('passport');
 const KakaoStrategy = require('passport-kakao').Strategy;
-const User = require('../models/User');
+const KakaoUser = require('../models/kakao_profile');
 
 // ✅ Passport 전략 설정 (함수 호출 X)
 passport.use(new KakaoStrategy({
@@ -60,7 +10,7 @@ passport.use(new KakaoStrategy({
     callbackURL: process.env.KAKAO_REDIRECT_URI
 }, async (accessToken, refreshToken, profile, done) => {
     try {
-                const exUser = await User.findOne({ 
+                const exUser = await KakaoUser.findOne({ 
             $or: [
                 { snsId: profile.id },
                 { email: profile._json.kakao_account.email }
@@ -70,7 +20,7 @@ passport.use(new KakaoStrategy({
         if (exUser) {
             return done(null, exUser);
         } else {
-            const newUser = await User.create({
+            const newUser = await KakaoUser.create({
                 email: profile._json.kakao_account.email,
                 nickname: profile.displayName,
                 snsId: profile.id,
@@ -86,12 +36,14 @@ passport.use(new KakaoStrategy({
 
 // ✅ 직렬화 & 역직렬화
 passport.serializeUser((user, done) => {
+    console.log(`🗂️ 사용자 세션 직렬화: ${user.nickname}`);
     done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
     try {
-        const user = await User.findById(id);
+        const user = await KakaoUser.findById(id);
+        console.log(`🔑 세션 복구 사용자: ${user.nickname}`);
         done(null, user);
     } catch (error) {
         done(error);

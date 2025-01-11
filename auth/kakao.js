@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const User = require('../models/User');
+const KakaoUser = require('../models/kakao_profile');
 
 // ✅ 카카오 API 키와 Redirect URI
 const KAKAO_CLIENT_ID = process.env.KAKAO_CLIENT_ID;
@@ -33,12 +33,12 @@ router.post('/', async (req, res) => {
         const { id, kakao_account } = userResponse.data;
         const nickname = kakao_account.profile.nickname;
         const email = kakao_account.email;
-        const profileImage = kakao_account.profile.profile_image_url;
+        //const profileImage = kakao_account.profile.profile_image_url;
 
         // ✅ 3. MongoDB에 사용자 정보 저장
-        let user = await User.findOne({ kakaoId: id });
+        let user = await KakaoUser.findOne({ kakaoId: id });
         if (!user) {
-            user = new User({ kakaoId: id, nickname, email, profileImage });
+            user = new User({ kakaoId: id, nickname, email});
             await user.save();
         }
 

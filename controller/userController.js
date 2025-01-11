@@ -7,15 +7,16 @@ const passport = require('passport');
 // });
 
 exports.kakaoCallback = (req, res) => {
+    console.log(`✅ 로그인 성공! 사용자: ${req.user.nickname}`);
     res.redirect('http://localhost:3000/');  // ✅ 성공 시 메인 페이지로 리다이렉트
 };
 
 // ✅ 사용자 데이터 조회 (예제 추가)
-const User = require('../models/User');
+const KakaoUser = require('../models/kakao_profile');
 
 exports.getUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await KakaoUser.findById(req.params.id);
         if (!user) {
             return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
         }
