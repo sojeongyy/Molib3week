@@ -4,9 +4,19 @@
 
 const mongoose = require("mongoose");
 
-exports.mongoDB = () => {
-  mongoose
-  .connect("mongodb+srv://cindy0325:dHJDfcnnEaisd0UX@madweek3.ncvs6.mongodb.net/")
-  .then(() => console.log("connected"))
-  .catch(() => console.log("mongodb connection failed"));  
-}
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log('✅ MongoDB에 연결되었습니다.');
+    } catch (error) {
+        console.error('⛔ MongoDB 연결 실패:', error);
+        process.exit(1); // 서버 종료
+    }
+};
+
+
+
+module.exports = {
+    connectDB,
+    mongoose
+};

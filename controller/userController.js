@@ -1,10 +1,14 @@
 const passport = require('passport');
 
-// ✅ 카카오 로그인 콜백 처리 (컨트롤러)
-exports.kakaoCallback = passport.authenticate('kakao', {
-    failureRedirect: '/login',
-    successRedirect: '/'
-});
+// // ✅ 카카오 로그인 콜백 처리 (컨트롤러) --> userRouter.js에서 이미 사용
+// exports.kakaoCallback = passport.authenticate('kakao', {
+//     failureRedirect: '/login',
+//     successRedirect: '/'
+// });
+
+exports.kakaoCallback = (req, res) => {
+    res.redirect('http://localhost:3000/');  // ✅ 성공 시 메인 페이지로 리다이렉트
+};
 
 // ✅ 사용자 데이터 조회 (예제 추가)
 const User = require('../models/User');
@@ -20,3 +24,6 @@ exports.getUserProfile = async (req, res) => {
         res.status(500).json({ error: '서버 오류 발생' });
     }
 };
+// exports.kakaoCallback = (req, res) => {
+//     res.json({ message: "카카오 로그인 성공!", user: req.user });
+// };

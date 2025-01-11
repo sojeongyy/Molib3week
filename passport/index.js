@@ -1,48 +1,102 @@
+// const passport = require('passport');
+// const KakaoStrategy = require('passport-kakao').Strategy;
+// const User = require('../models/User');
+
+// // ✅ CommonJS 방식으로 내보내기
+// module.exports = (app) => {
+//     // ✅ Passport 초기화
+//     app.use(passport.initialize());
+//     app.use(passport.session());
+
+//     // ✅ KakaoStrategy 설정
+//     passport.use(new KakaoStrategy({
+//             clientID: process.env.KAKAO_CLIENT_ID,
+//             callbackURL: process.env.KAKAO_REDIRECT_URI
+//         },
+//         async (accessToken, refreshToken, profile, done) => {
+//             try {
+//                 const exUser = await User.findOne({ snsId: profile.id });
+//                 if (exUser) {
+//                     return done(null, exUser);
+//                 } else {
+//                     const newUser = await User.create({
+//                         email: profile._json.kakao_account.email,
+//                         nickname: profile.displayName,
+//                         snsId: profile.id,
+//                         providerType: 'kakao',
+//                     });
+//                     return done(null, newUser);
+//                 }
+//             } catch (error) {
+//                 console.error(error);
+//                 return done(error);
+//             }
+//         }
+//     ));
+
+//     // ✅ 세션 직렬화 (serializeUser)
+//     passport.serializeUser((user, done) => {
+//         done(null, user.id);
+//     });
+
+//     // ✅ 세션 역직렬화 (deserializeUser)
+//     passport.deserializeUser(async (id, done) => {
+//         try {
+//             const user = await User.findById(id);
+//             done(null, user);
+//         } catch (error) {
+//             done(error);
+//         }
+//     });
+// };
+
 const passport = require('passport');
 const KakaoStrategy = require('passport-kakao').Strategy;
 const User = require('../models/User');
 
-export default (app) => {
-    app.use(initialize()); // passport를 초기화 하기 위해서 passport.initialize 미들웨어 사용
-    use(
-        new KakaoStrategy({
-            clientID: process.env.KAKAO_CLIENT_ID, // 카카오 로그인에서 발급받은 REST API 키
-            callbackURL: process.env.KAKAO_REDIRECT_URL, // 카카오 로그인 Redirect URI 경로
-        },
-        // clientID에 카카오 앱 아이디 추가
-        // callbackURL: 카카오 로그인 후 카카오가 결과를 전송해줄 URL
-        // accessToken, refreshToken : 로그인 성공 후 카카오가 보내준 토큰
-        // profile: 카카오가 보내준 유저 정보. profile의 정보를 바탕으로 회원가입
-        async (accessToken, refreshToken, profile, done) => {
-            try {
-                const exUser = await User.findOne({
-                    // 카카오 플랫폼에서 로그인 했고 & snsId필드에 카카오 아이디가 일치할경우
-                    where: { snsId: profile.id, /*providerType: 'kakao'*/ },
-                });
-                // 이미 가입된 카카오 프로필이면 성공
-                if (exUser) {
-                    done(null, exUser); // 로그인 인증 완료
-                } else {
-                    // 가입되지 않는 유저면 회원가입 시키고 로그인을 시킨다
-                    const newUser = await User.create({
-                        email: profile._json && profile._json.kakao_account_email,
-                        nickname: profile.displayName,
-                        snsId: profile.id,
-                        providerType: 'kakao',
-                    });
-                    done(null, newUser); // 회원가입하고 로그인 인증 완료
-                }
-            } catch (error) {
-                console.error(error);
-                done(error);
-            }
-        },
-        ),
-    );
-    serializeUser((user,done)=>{ 
-        done(null,user);
-    });
-    deserializeUser((user,done)=>{
-        done(null,user);
-    });
-};
+// ✅ Passport 전략 설정 (함수 호출 X)
+passport.use(new KakaoStrategy({
+    clientID: process.env.KAKAO_CLIENT_ID,
+    callbackURL: process.env.KAKAO_REDIRECT_URI
+}, async (accessToken, refreshToken, profile, done) => {
+    try {
+                const exUser = await User.findOne({ 
+            $or: [
+                { snsId: profile.id },
+                { email: profile._json.kakao_account.email }
+            ]
+        });
+
+        if (exUser) {
+            return done(null, exUser);
+        } else {
+            const newUser = await User.create({
+                email: profile._json.kakao_account.email,
+                nickname: profile.displayName,
+                snsId: profile.id,
+                providerType: 'kakao',
+            });
+            return done(null, newUser);
+        }
+    } catch (error) {
+        console.error(error);
+        return done(error);
+    }
+}));
+
+// ✅ 직렬화 & 역직렬화
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error);
+    }
+});
+
+// ✅ 객체로 내보내기 (함수 아님)
+module.exports = passport;
