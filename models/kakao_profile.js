@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');  // ✅ CommonJS 방식으로 변경
-const { Schema, model } = mongoose;    // ✅ 구조분해 할당 유지
 
 // ✅ User 스키마 정의
 const KakaoSchema = new mongoose.Schema({

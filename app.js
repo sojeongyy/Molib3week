@@ -5,22 +5,27 @@ const bodyParser = require('body-parser');
 const { connectDB, mongoose } = require('./config/db'); // MongoDB 연결
 const userRoutes = require('./routes/userRouter.js'); // 사용자 라우트
 const passport = require('passport');
+const cors = require('cors');
 const kakaoAuthRouter = require('./auth/kakao');
+const cookieParser = require('cookie-parser');
 require('./passport/index');  // Passport 설정 파일 로드
 
 const app = express();
 connectDB();
 //passport(app);
 
-// ✅ 세션 설정 (순서 중요: session → passport.initialize → passport.session)
+// ✅ CORS 및 미들웨어 등록 (순서 중요)
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+}));
+app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(session({ 
     secret: process.env.SESSION_SECRET || 'mySecretKey', 
     resave: false, 
     saveUninitialized: true 
 }));
-
-// ✅ 미들웨어 등록
-app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
 

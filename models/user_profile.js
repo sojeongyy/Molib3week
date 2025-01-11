@@ -1,23 +1,32 @@
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
-    kakaoId: {
-        type: String,
-        unique: true
+    userId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'kakao_profiles',
+        required: true
     },
-    email: {
+    username: {
         type: String
     },
-    nickname: {
+    photo: {
         type: String
     },
-    profileImage: {
+    status: {
         type: String
     },
-    providerType: {
-        type: String,
-        default: 'kakao'
+    similarity: {
+        type: Number
+    },
+    intro: {
+        type: String
+    },
+    ideal: {
+        type: String
+    },
+    rating: {
+        type: Number
     }
 });
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('UserProfile', UserSchema);

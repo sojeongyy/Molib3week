@@ -3,29 +3,48 @@
 const passport = require('passport');
 const KakaoStrategy = require('passport-kakao').Strategy;
 const KakaoUser = require('../models/kakao_profile');
+const UserProfile = require('../models/user_profile');
 
 // ✅ Passport 전략 설정 (함수 호출 X)
 passport.use(new KakaoStrategy({
     clientID: process.env.KAKAO_CLIENT_ID,
     callbackURL: process.env.KAKAO_REDIRECT_URI
 }, async (accessToken, refreshToken, profile, done) => {
+    console.log("✅ Passport KakaoStrategy 실행됨");
     try {
-                const exUser = await KakaoUser.findOne({ 
+            const exKakaoUser = await KakaoUser.findOne({ 
             $or: [
                 { snsId: profile.id },
                 { email: profile._json.kakao_account.email }
             ]
         });
 
-        if (exUser) {
-            return done(null, exUser);
+        if (exKakaoUser) {
+            // 이메일 출력
+            console.log(`📧 카카오 이메일: ${profile._json.kakao_account.email}`);
+            console.log(`✅ 기존 사용자 로그인: ${exKakaoUser.nickname}`);
+            return done(null, exKakaoUser);
         } else {
+            console.log("✅ 새로운 사용자 생성 중...");
             const newUser = await KakaoUser.create({
                 email: profile._json.kakao_account.email,
                 nickname: profile.displayName,
                 snsId: profile.id,
                 providerType: 'kakao',
             });
+
+            // ✅ 연동된 사용자 프로필 생성
+            await UserProfile.create({
+                userId: newUser._id,
+                username: "새 사용자",
+                photo: "/images/people/default_profile.jpeg",
+                status: "single",
+                similarity: 0,
+                intro: "소개 정보 없음",
+                ideal: "이상형 정보 없음",
+                rating: 0
+            });
+            console.log(`✅ 신규 카카오 사용자 등록: ${newUser.nickname}`);
             return done(null, newUser);
         }
     } catch (error) {
@@ -43,6 +62,10 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (id, done) => {
     try {
         const user = await KakaoUser.findById(id);
+        if (!user) {
+            console.log("❌ 세션 복구 실패: 사용자 정보 없음");
+            return done(null, false);  // ✅ 사용자 없을 경우 세션 제거
+        }
         console.log(`🔑 세션 복구 사용자: ${user.nickname}`);
         done(null, user);
     } catch (error) {
