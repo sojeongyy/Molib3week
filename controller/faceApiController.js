@@ -53,3 +53,38 @@ exports.compareFaces = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+const UserProfile = require('../models/user_profile');
+
+// ✅ 유사도 업데이트 컨트롤러 (현재 로그인된 사용자 기준)
+exports.updateSimilarity = async (req, res) => {
+    try {
+        // ✅ 로그인한 사용자 정보 추출
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ message: "사용자가 인증되지 않았습니다." });
+        }
+
+        const { similarity } = req.body;
+
+        // ✅ 유효성 검사
+        if (similarity === undefined || isNaN(parseFloat(similarity))) {
+            return res.status(400).json({ message: "유효한 유사도 점수가 필요합니다." });
+        }
+
+        // ✅ 사용자 프로필 업데이트
+        const updatedUser = await UserProfile.findOneAndUpdate(
+            { userId: req.user.id },  
+            { $set: { similarity: parseFloat(similarity) } },  
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "사용자 프로필을 찾을 수 없습니다." });
+        }
+
+        res.status(200).json({ message: "✅ 유사도 점수가 성공적으로 업데이트되었습니다.", updatedUser });
+    } catch (error) {
+        console.error("❌ 유사도 점수 업데이트 오류:", error);
+        res.status(500).json({ message: "서버 오류 발생", error: error.message });
+    }
+};

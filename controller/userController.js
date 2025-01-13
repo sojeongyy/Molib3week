@@ -62,3 +62,21 @@ exports.getUserProfile = async (req, res) => {
         res.status(500).json({ error: '서버 오류 발생' });
     }
 };
+
+// exports.updateUserProfile = async (req, res) => {
+//     const { username, ideal, intro, status } = req.body;
+//     const userId = req.user.id; // JWT로 인증된 사용자
+
+//     try {
+//         const updatedProfile = await UserProfile.findOneAndUpdate(
+//             { userId }, 
+//             { username, ideal, intro, status }, 
+//             { new: true, upsert: true }  // upsert: 없으면 새로 생성
+//         );
+
+//         res.status(200).json({ message: "✅ 프로필 업데이트 성공!", updatedProfile });
+//     } catch (error) {
+//         console.error("❌ 프로필 업데이트 중 오류:", error);
+//         res.status(500).json({ error: "서버 오류 발생" });
+//     }
+// };

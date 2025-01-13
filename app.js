@@ -9,6 +9,7 @@ const cors = require('cors');
 const kakaoAuthRouter = require('./auth/kakao');
 const cookieParser = require('cookie-parser');
 const faceApiRoutes = require('./routes/faceApiRouter'); 
+
 require('./passport/index');  // Passport 설정 파일 로드
 
 const app = express();
@@ -21,11 +22,17 @@ app.use(cors({
     credentials: true
 }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(session({ 
     secret: process.env.SESSION_SECRET || 'mySecretKey', 
     resave: false, 
-    saveUninitialized: true 
+    saveUninitialized: true,
+    cookie: {
+        httpOnly: true,   // ✅ 클라이언트에서 접근 불가
+        secure: false,    // ✅ 개발 환경에서는 false (HTTPS에서는 true)
+        maxAge: 1000 * 60 * 60 * 24 // 1일
+    }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -35,7 +42,7 @@ app.use('/auth', userRoutes);  // 카카오 인증 관련 라우트
 app.use('/auth/kakao', kakaoAuthRouter);
 app.use('/users', userRoutes);  // 일반 사용자 관련 라우트
 
-app.use('/api', faceApiRoutes);  // 📌 얼굴 비교 라우트 추가
+app.use('/', faceApiRoutes);  // 📌 얼굴 비교 라우트 추가
 
 // ✅ 기본 라우트
 app.get('/', (req, res) => {

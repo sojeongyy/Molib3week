@@ -4,6 +4,7 @@ const passport = require('passport');
 const KakaoStrategy = require('passport-kakao').Strategy;
 const KakaoUser = require('../models/kakao_profile');
 const UserProfile = require('../models/user_profile');
+const jwt = require('jsonwebtoken');
 
 // ✅ Passport 전략 설정 (함수 호출 X)
 passport.use(new KakaoStrategy({
@@ -20,10 +21,11 @@ passport.use(new KakaoStrategy({
         });
 
         if (exKakaoUser) {
+            const token = jwt.sign({ id: exKakaoUser._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
             // 이메일 출력
             console.log(`📧 카카오 이메일: ${profile._json.kakao_account.email}`);
             console.log(`✅ 기존 사용자 로그인: ${exKakaoUser.nickname}`);
-            return done(null, exKakaoUser);
+            return done(null, exKakaoUser, { token });
         } else {
             console.log("✅ 새로운 사용자 생성 중...");
             const newUser = await KakaoUser.create({
@@ -44,9 +46,11 @@ passport.use(new KakaoStrategy({
                 ideal: "이상형 정보 없음",
                 rating: 0
             });
+            // ✅ JWT 발급 및 쿠키 저장 (새 사용자)
+            const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
             console.log(`✅ 신규 카카오 사용자 등록: ${newUser.nickname}`);
             // 새로운 사용자일 경우 signup 페이지로 리다이렉트
-            return done(null, newUser, { redirectToSignup: true });
+            return done(null, newUser, { token, redirectToSignup: true });
         }
     } catch (error) {
         console.error(error);
