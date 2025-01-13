@@ -45,7 +45,8 @@ passport.use(new KakaoStrategy({
                 rating: 0
             });
             console.log(`✅ 신규 카카오 사용자 등록: ${newUser.nickname}`);
-            return done(null, newUser);
+            // 새로운 사용자일 경우 signup 페이지로 리다이렉트
+            return done(null, newUser, { redirectToSignup: true });
         }
     } catch (error) {
         console.error(error);

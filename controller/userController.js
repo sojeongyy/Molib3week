@@ -1,48 +1,3 @@
-// const passport = require('passport');
-// const UserProfile = require('../models/user_profile');
-// const KakaoUser = require('../models/kakao_profile');
-
-
-// exports.kakaoCallback = (req, res) => {
-//     console.log(`✅ 로그인 성공! 사용자: ${req.user.nickname}`);
-//     res.redirect('http://localhost:3000/');  // ✅ 성공 시 메인 페이지로 리다이렉트
-// };
-
-// // ✅ 사용자 데이터 조회 (예제 추가)
-
-// exports.getUserProfile = async (req, res) => {
-//     try {
-
-//         // ✅ 쿠키에서 JWT 토큰 추출
-//         const token = req.cookies.token;
-//         if (!token) {
-//             return res.status(401).json({ message: "로그인이 필요합니다." });
-//         }
-//         // ✅ JWT 토큰 검증
-//         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-//         // ✅ 로그인한 사용자 정보로 `userprofile` 데이터 가져오기
-//         const userProfile = await UserProfile.findOne({ userId: req.user._id }).populate('userId');
-        
-//         if (!userProfile) {
-//             return res.status(404).json({ message: "프로필을 찾을 수 없습니다." });
-//         }
-
-//         res.json({
-//             username: userProfile.username,
-//             photo: userProfile.photo,
-//             status: userProfile.status,
-//             similarity: userProfile.similarity,
-//             intro: userProfile.intro,
-//             ideal: userProfile.ideal,
-//             rating: userProfile.rating
-//         });
-//     } catch (error) {
-//         console.error('❌ 프로필 불러오기 실패:', error);
-//         res.status(500).json({ error: '서버 오류 발생' });
-//     }
-// };
-
 const jwt = require('jsonwebtoken');
 const UserProfile = require('../models/user_profile');
 const mongoose = require('mongoose');
@@ -58,6 +13,13 @@ exports.kakaoCallback = (req, res) => {
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000
     });
+
+    // ✅ 새로운 사용자라면 /signup 페이지로 이동
+    if (req.authInfo && req.authInfo.redirectToSignup) {
+        console.log("✅ 새로운 사용자, signup 페이지로 이동");
+        return res.redirect('http://localhost:3000/signup');
+    }
+
     console.log(`✅ 로그인 성공! 사용자: ${req.user.nickname}`);
     res.redirect('http://localhost:3000/');
 };
