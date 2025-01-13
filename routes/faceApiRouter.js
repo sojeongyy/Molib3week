@@ -7,9 +7,12 @@ const { compareFaces, updateSimilarity } = require('../controller/faceApiControl
 const upload = multer({ storage: multer.memoryStorage() });
 
 // ✅ POST - 얼굴 유사도 비교 엔드포인트
-router.post('/api/compare-faces', upload.array('images', 2), compareFaces);
+router.post('/api/compare-faces', upload.fields([
+    { name: 'profileImage', maxCount: 1 },
+    { name: 'capturedImage', maxCount: 1 }
+]), compareFaces);
 
 // 유사도 업데이트 라우트
 //router.put('/auth/update-similarity', verifyJWT, updateSimilarity);
-router.put('/auth/update-similarity', updateSimilarity);
+router.put('/auth/update-similarity', upload.single('profileImage'), updateSimilarity);
 module.exports = router;
