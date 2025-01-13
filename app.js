@@ -10,6 +10,7 @@ const kakaoAuthRouter = require('./auth/kakao');
 const cookieParser = require('cookie-parser');
 const faceApiRoutes = require('./routes/faceApiRouter'); 
 const multer = require('multer');
+const personalityRouter = require('./routes/personalityRouter');
 
 require('./passport/index');  // Passport 설정 파일 로드
 
@@ -56,6 +57,7 @@ app.use('/auth/kakao', kakaoAuthRouter);
 app.use('/users', userRoutes);  // 일반 사용자 관련 라우트
 
 app.use('/', faceApiRoutes);  // 📌 얼굴 비교 라우트 추가
+app.use('/api/personality', personalityRouter);
 
 // ✅ 기본 라우트
 app.get('/', (req, res) => {

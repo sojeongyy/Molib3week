@@ -26,7 +26,12 @@ const UserSchema = new mongoose.Schema({
     },
     rating: {
         type: Number
-    }
+    },
+    personality: {
+        type: [String], // 여러 성격을 배열로 저장
+        enum: ['다정한', '친절한', '외향적인', '내향적인', '귀여운', '과묵한', '어른스러운', '세심한'],
+        default: []
+    },
 });
 
 module.exports = mongoose.model('UserProfile', UserSchema);

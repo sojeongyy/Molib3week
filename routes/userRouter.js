@@ -48,9 +48,9 @@ router.put('/signup', async (req, res) => {
 
         const { username, ideal, intro, status } = req.body;
 
-        if (!username || !ideal || !intro || !status) {
-            return res.status(400).json({ message: "모든 필드를 입력해야 합니다." });
-        }
+        // if (!username || !ideal || !intro || !status) {
+        //     return res.status(400).json({ message: "모든 필드를 입력해야 합니다." });
+        // }
 
         // ✅ 기존 사용자 데이터 업데이트
         const updatedProfile = await UserProfile.findOneAndUpdate(
