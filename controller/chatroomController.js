@@ -39,7 +39,11 @@ const getChatRoomsByUserId = async (req, res) => {
         }
 
         // ✅ (4) 필터링된 채팅방 데이터 반환
-      res.status(200).json(chatRooms);
+      //res.status(200).json(chatRooms);
+        res.status(200).json({
+            username: existingUser.username,  // 사용자 이름 추가
+            chatRooms: chatRooms
+        });
       
     } catch (error) {
         console.error("❌ 채팅방 조회 오류:", error);
