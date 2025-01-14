@@ -1,24 +1,39 @@
+// messages_data.json 기반 스키마!!
 const mongoose = require("mongoose");
 
-const ChatRoomSchema = new mongoose.Schema(
-  {
-    // 채팅방 ID
-    /* 어차피 _id 자동으로 생성되는 듯
-    chatroomId: {
-      required: true,
-    },*/
-    // 1:1 채팅 참가자 목록
-    participants: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "UserProfile", // UserProfile 모델과 연결
+const chatRoomSchema = new mongoose.Schema({
+    chatRoomId: {
+        type: Number,
         required: true,
-      },
+        unique: true
+    },
+    participants: [
+        {
+            userId: { 
+                type: mongoose.Schema.Types.ObjectId, 
+                ref: 'userprofiles',
+                required: true
+            },
+            username: String,
+            photo: String,
+            status: String
+        }
     ],
-  },
-  {
-    timestamps: true, // createdAt, updatedAt 자동 생성
-  }
-);
+    messages: [
+        {
+            messageId: String,
+            senderId: String,
+            senderName: String,
+            content: String,
+            timestamp: Date
+        }
+    ],
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
 
-module.exports = mongoose.model("ChatRoom", ChatRoomSchema);
+const ChatRoomModel = mongoose.model("ChatRoom", chatRoomSchema);
+
+module.exports = { ChatRoomModel };
