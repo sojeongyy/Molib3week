@@ -27,16 +27,6 @@ app.use(bodyParser.json({ limit: '1000mb' }));
 app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
 
 
-// ✅ 라우트에서 적용
-// app.post('/upload', upload.array('images', 2), (req, res) => {
-//     try {
-//         console.log('✅ 이미지 업로드 성공:', req.files);
-//         res.json({ message: "이미지 업로드 성공!" });
-//     } catch (error) {
-//         res.status(500).send("오류 발생: " + error.message);
-//     }
-// });
-
 app.use(cookieParser());
 app.use(session({ 
     secret: process.env.SESSION_SECRET || 'mySecretKey', 
