@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const chatRoomSchema = new mongoose.Schema({
     chatRoomId: {
-        type: Number,
+        type: String,
         required: true,
         unique: true
     },
@@ -36,4 +36,4 @@ const chatRoomSchema = new mongoose.Schema({
 
 const ChatRoomModel = mongoose.model("ChatRoom", chatRoomSchema);
 
-module.exports = { ChatRoomModel };
+module.exports = ChatRoomModel;

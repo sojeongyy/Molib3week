@@ -75,9 +75,6 @@ exports.showUserProfile = async (req, res) => {
     const userId = req.params.userId;
     console.log("✅ 요청받은 사용자 ID:", userId);
 
-    // ✅ userId를 string에서 ObjectId로 변환
-    //const objectId = new mongoose.Types.ObjectId(userId);
-
     // ✅ MongoDB에서 userId를 기준으로 검색
     const userProfile = await UserProfile.findOne({ userId: userId });
 
