@@ -22,7 +22,7 @@ const getChatRoomsByUserId = async (req, res) => {
         console.log("userId", userId);
         // ✅ (2) 데이터베이스에서 해당 사용자 조회
         const existingUser = await UserProfile.findOne({ userId: userId });
-
+        
         if (!existingUser) {
             return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
         }
@@ -50,6 +50,8 @@ const getChatRoomsByUserId = async (req, res) => {
         res.status(500).json({ message: "서버 오류 발생", error });
     }
 };
+
+
 
 
 // // (2) 특정 `chatRoomId`에 대한 AI 피드백 제공 (메시지 5개마다)
