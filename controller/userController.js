@@ -27,31 +27,61 @@ exports.kakaoCallback = (req, res) => {
 };
 
 // ✅ 사용자 프로필 조회 (JWT에서 추출한 ID 사용)
+// ✅ 사용자 프로필 조회 (JWT에서 추출한 ID 사용)
 exports.getUserProfile = async (req, res) => {
   console.log("✅ getUserProfile 라우트 호출됨");
   console.log("✅ 요청받은 사용자 ID:", req.user.id);
 
+  let userProfile;
   try {
-    // ✅ userId 타입 확인
-    console.log("✅ userId 데이터 타입:", typeof req.user.id);
-
-    // ✅ MongoDB의 전체 UserProfile 데이터 출력 (디버깅용)
-    const allProfiles = await UserProfile.find();
-    console.log("✅ 모든 프로필 데이터:", allProfiles);
-
     const userId = new mongoose.Types.ObjectId(req.user.id);
-    // ✅ userId에 해당하는 프로필 찾기
-    const userProfile = await UserProfile.findOne({ userId }).populate(
-      "userId"
-    );
-    console.log("✅ 조회 결과:", userProfile);
+    userProfile = await UserProfile.findOne({ userId }).populate("userId");
+  } catch (error) {
+    console.error("❌ DB 조회 중 오류 발생:", error);
+    return res.status(500).json({ error: "DB 조회 오류" });
+  }
+
+  if (!userProfile) {
+    console.log("❌ 프로필이 존재하지 않습니다.");
+    return res.status(404).json({ message: "프로필을 찾을 수 없습니다." });
+  }
+
+  // 이제 userProfile의 값이 null이 아님이 확실해진 상태
+  try {
+    const responseData = {
+      userId: userProfile.userId._id.toString(),
+      username: userProfile.username,
+      photo: userProfile.photo || "/default.png",
+      status: userProfile.status,
+      similarity: userProfile.similarity,
+      intro: userProfile.intro,
+      ideal: userProfile.ideal,
+      rating: userProfile.rating,
+    };
+    console.log("✅ responseData:", responseData);
+    return res.status(200).json(responseData);
+  } catch (error) {
+    console.error("❌ responseData 생성 중 오류 발생:", error);
+    return res.status(500).json({ error: "데이터 처리 오류" });
+  }
+};
+
+exports.showUserProfile = async (req, res) => {
+  console.log("✅ getUserProfile 라우트 호출됨");
+
+  try {
+    // ✅ 경로에서 userId 가져오기
+    const userId = req.params.userId;
+    console.log("✅ 요청받은 사용자 ID:", userId);
+
+    // ✅ MongoDB에서 userId를 기준으로 검색
+    const userProfile = await UserProfile.findOne({ userId: userId });
 
     if (!userProfile) {
       console.log("❌ 프로필이 존재하지 않습니다.");
       return res.status(404).json({ message: "프로필을 찾을 수 없습니다." });
     }
 
-    // ✅ 프로필이 존재할 경우 데이터 반환
     res.status(200).json({
       username: userProfile.username,
       photo: userProfile.photo || "/default.png",

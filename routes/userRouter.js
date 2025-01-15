@@ -7,6 +7,8 @@ const UserProfile = require("../models/user_profile");
 const { getAllUsers } = require("../controller/userController");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
+const http = require("http");
+const { Server } = require("socket.io");
 
 // /auth/
 // ✅ 'authenticate' 대신 'passport.authenticate' 사용
