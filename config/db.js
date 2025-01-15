@@ -8,6 +8,7 @@ const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('✅ MongoDB에 연결되었습니다.');
+        //watchChatRoomMessages();
     } catch (error) {
         console.error('⛔ MongoDB 연결 실패:', error);
         process.exit(1); // 서버 종료

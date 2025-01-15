@@ -58,7 +58,7 @@ exports.getUserProfile = async (req, res) => {
       ideal: userProfile.ideal,
       rating: userProfile.rating,
     };
-    console.log("✅ responseData:", responseData);
+    //console.log("✅ responseData:", responseData);
     return res.status(200).json(responseData);
   } catch (error) {
     console.error("❌ responseData 생성 중 오류 발생:", error);

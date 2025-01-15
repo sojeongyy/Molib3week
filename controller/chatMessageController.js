@@ -50,7 +50,7 @@ exports.createChatRoom = async (req, res) => {
 exports.saveMessage = async (req, res) => {
   // 프론트에서 보내주는 값들
   // chatRoomId, user(_id), message 등을 body로 받아온다고 가정
-  console.log("Request Body:", req.body);
+  //console.log("Request Body:", req.body);
   const { chatroomId, user, message } = req.body;
 
   // 유효성 검사
@@ -65,8 +65,8 @@ exports.saveMessage = async (req, res) => {
     // 1) chatRoomId로 해당 채팅방 찾기
 
     const chatRoom = await ChatRoomModel.findOne({ chatRoomId: chatroomId });
-    console.log("Chat Room Found:", chatRoom);
-    console.log("Query Executed with:", { chatRoomId: chatroomId });
+    //console.log("Chat Room Found:", chatRoom);
+    //console.log("Query Executed with:", { chatRoomId: chatroomId });
 
     if (!chatRoom) {
       return res.status(404).json({ error: "Chat room not found" });
@@ -83,7 +83,7 @@ exports.saveMessage = async (req, res) => {
 
     // 3) DB 저장
     await chatRoom.save();
-    console.log(">>> chatRoom after saving:", chatRoom);
+    //console.log(">>> chatRoom after saving:", chatRoom);
 
     // 4) 성공 응답
     res.status(201).json({ message: "Message saved", newMessage });
