@@ -2,6 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const { kakaoCallback } = require("../controller/userController"); // 사용자 컨트롤러 임포트
 const { getUserProfile } = require("../controller/userController");
+const { showUserProfile } = require("../controller/userController");
 const UserProfile = require("../models/user_profile");
 const { getAllUsers } = require("../controller/userController");
 const jwt = require("jsonwebtoken");
@@ -9,6 +10,7 @@ const router = express.Router();
 const http = require("http");
 const { Server } = require("socket.io");
 
+// /auth/
 // ✅ 'authenticate' 대신 'passport.authenticate' 사용
 router.get("/kakao", passport.authenticate("kakao"));
 
@@ -41,17 +43,7 @@ const verifyJWT = (req, res, next) => {
 // ✅ 로그인한 사용자 프로필 조회 (JWT 검증 포함)
 router.get("/userprofile", verifyJWT, getUserProfile);
 
-// 인증 여부 확인용 미들웨어 예시
-const isAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    console.log("✅ 인증 성공: ", req.user); // `req.user` 정보 확인
-    return next();
-  }
-  console.log("❌ 인증 실패: 로그인 필요");
-  res.status(401).json({
-    message: "로그인이 필요합니다.",
-  });
-};
+router.get("/showuserprofile/:userId", showUserProfile);
 
 // 모든 사용자 프로필 가져오기
 router.get("/alluserprofile", verifyJWT, getAllUsers);

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { ChatRoomModel } = require("../models/chatroom_info"); // ChatRoom 모델 가져오기
+const ChatRoomModel = require("../models/chatroom_info"); // ChatRoom 모델 가져오기
 
 // 특정 채팅방 조회
 exports.getChatRoomById = async (req, res) => {

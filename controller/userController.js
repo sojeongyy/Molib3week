@@ -66,6 +66,39 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
+exports.showUserProfile = async (req, res) => {
+  console.log("✅ getUserProfile 라우트 호출됨");
+
+  try {
+    // ✅ 경로에서 userId 가져오기
+    const userId = req.params.userId;
+    console.log("✅ 요청받은 사용자 ID:", userId);
+
+    // ✅ MongoDB에서 userId를 기준으로 검색
+    const userProfile = await UserProfile.findOne({ userId: userId });
+
+    if (!userProfile) {
+      console.log("❌ 프로필이 존재하지 않습니다.");
+      return res.status(404).json({ message: "프로필을 찾을 수 없습니다." });
+    }
+
+    res.status(200).json({
+      username: userProfile.username,
+      photo: userProfile.photo || "/default.png",
+      status: userProfile.status,
+      similarity: userProfile.similarity,
+      intro: userProfile.intro,
+      ideal: userProfile.ideal,
+      rating: userProfile.rating,
+    });
+  } catch (error) {
+    console.error("❌ 프로필 조회 중 오류 발생:", error);
+    res.status(500).json({ error: "서버 오류 발생" });
+  }
+};
+
+
+
 // 모든 사용자 반환 함수
 exports.getAllUsers = async (req, res) => {
   try {
