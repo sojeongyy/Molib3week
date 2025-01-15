@@ -7,9 +7,9 @@ const chatMessageController = require("../controller/chatMessageController");
 router.post("/messages", chatMessageController.saveMessage);
 
 // Route to get all chat messages
-router.get("/messages", chatMessageController.getAllMessages);
+//router.get("/messages", chatMessageController.getAllMessages);
 
 // Route to delete a specific chat message
-router.delete("/messages/:id", chatMessageController.deleteMessage);
+//router.delete("/messages/:id", chatMessageController.deleteMessage);
 
 module.exports = router;

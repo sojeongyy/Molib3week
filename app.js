@@ -16,6 +16,9 @@ const messageRouter = require("./routes/chat");
 const http = require("http");
 const { Server } = require("socket.io");
 
+const chatMessageController = require("./controller/chatMessageController");
+console.log(chatMessageController);
+
 require("./passport/index"); // Passport 설정 파일 로드
 
 const app = express();

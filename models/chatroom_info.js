@@ -10,7 +10,7 @@ const chatRoomSchema = new mongoose.Schema({
   participants: [
     {
       userId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: "userprofiles",
         required: true,
       },
@@ -23,7 +23,7 @@ const chatRoomSchema = new mongoose.Schema({
     {
       messageId: String,
       senderId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: "userprofiles",
         required: true,
       },

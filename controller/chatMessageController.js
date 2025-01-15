@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
-const ChatRoom = require("../models/chatroom_info"); // ChatRoom 모델 가져오기
+const { ChatRoomModel } = require("../models/chatroom_info"); // ChatRoom 모델 가져오기
 
 // 특정 채팅방 조회
 exports.getChatRoomById = async (req, res) => {
   const { chatRoomId } = req.params;
 
   try {
-    const chatRoom = await ChatRoom.findOne({ chatRoomId });
+    const chatRoom = await ChatRoomModel.findOne({ chatRoomId });
     if (!chatRoom) {
       return res.status(404).json({ error: "Chat room not found" });
     }
@@ -27,13 +27,13 @@ exports.createChatRoom = async (req, res) => {
   }
 
   try {
-    const existingRoom = await ChatRoom.findOne({ chatRoomId });
+    const existingRoom = await ChatRoomModel.findOne({ chatRoomId });
     if (existingRoom) {
       return res.status(409).json({ error: "Chat room already exists" });
     }
 
     // participants가 없으면 빈 배열로 기본값 설정
-    const newRoom = new ChatRoom({
+    const newRoom = new ChatRoomModel({
       chatRoomId,
       participants: participants || [],
       messages: [],
@@ -48,32 +48,47 @@ exports.createChatRoom = async (req, res) => {
 
 // 특정 채팅방에 메시지 추가
 exports.saveMessage = async (req, res) => {
-  const { chatRoomId } = req.params;
-  // 프론트에서 user, message 라는 키로 보낸다고 가정
-  const { user, message } = req.body;
+  // 프론트에서 보내주는 값들
+  // chatRoomId, user(_id), message 등을 body로 받아온다고 가정
+  console.log("Request Body:", req.body);
+  const { chatroomId, user, message } = req.body;
 
+  // 유효성 검사
+  if (!chatroomId) {
+    return res.status(400).json({ error: "chatroomId is required" });
+  }
   if (!user || !message) {
     return res.status(400).json({ error: "user and message are required" });
   }
 
   try {
-    const chatRoom = await ChatRoom.findOne({ chatRoomId });
+    // 1) chatRoomId로 해당 채팅방 찾기
+
+    const chatRoom = await ChatRoomModel.findOne({ chatRoomId: chatroomId });
+    console.log("Chat Room Found:", chatRoom);
+    console.log("Query Executed with:", { chatRoomId: chatroomId });
+
     if (!chatRoom) {
       return res.status(404).json({ error: "Chat room not found" });
     }
 
+    // 2) messages 배열에 새 메시지 push
     const newMessage = {
-      messageId: `msg_${Date.now()}`,
-      senderId: user, // userId -> user
-      content: message, // content -> message
-      timestamp: new Date().toISOString(),
+      messageId: `msg_${Date.now()}`, // 메시지 ID 예시
+      senderId: user, // user의 _id
+      content: message, // 메시지 내용
+      timestamp: new Date(),
     };
-
     chatRoom.messages.push(newMessage);
-    await chatRoom.save();
 
+    // 3) DB 저장
+    await chatRoom.save();
+    console.log(">>> chatRoom after saving:", chatRoom);
+
+    // 4) 성공 응답
     res.status(201).json({ message: "Message saved", newMessage });
   } catch (error) {
+    console.error("Error in saveMessage route:", error);
     res.status(500).json({ error: "Server error", details: error.message });
   }
 };
