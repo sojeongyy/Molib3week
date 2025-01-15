@@ -76,9 +76,9 @@ const aiFeedback = async (req, res) => {
         // OpenAI API 호출
         const completion = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
-            query: "Provide positive feedback for the conversation.",
+            //query: "Provide positive feedback for the conversation.",
             messages: [
-                { role: "system", content: query },
+                { role: "system", content: "Provide positive feedback for the conversation." },
                 ...formattedMessages.slice(-5),
             ],
             max_tokens: 100
