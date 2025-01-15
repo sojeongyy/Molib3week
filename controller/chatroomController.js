@@ -63,86 +63,46 @@ const aiFeedback = async (req, res) => {
     }
 
     try {
-        console.log(`✅ Change Stream 활성화됨 (채팅방 ID: ${chatRoomId})`);
+        console.log(`✅ AI 피드백 활성화됨 (채팅방 ID: ${chatRoomId})`);
 
-        // ✅ Change Stream 감지 로직을 별도 함수로 정의
-        const startChangeStream = () => {
-            const chatRoomCollection = mongoose.connection.collection("chatrooms");
-            const changeStream = chatRoomCollection.watch([
-                { $match: { "fullDocument.chatRoomId": chatRoomId } }
-            ]);
+        const chatRoom = await ChatRoomModel.findOne({ chatRoomId });
+        if (!chatRoom) {
+            console.log("❌ 채팅방을 찾을 수 없습니다.");
+            return;
+        }
 
-            changeStream.on("change", async (change) => {
-                console.log("📝 메시지 변경 감지됨:", change);
+        const messages = chatRoom.messages;
+        if (messages.length % 3 !== 0) {
+            console.log("🟡 메시지가 3개 단위가 아닙니다. 피드백 스킵.");
+            return;
+        }
 
-                if (change.operationType === "update") {
-                    const chatRoom = await ChatRoomModel.findOne({ chatRoomId });
-                    if (!chatRoom) {
-                        console.log("❌ 채팅방을 찾을 수 없습니다.");
-                        return;
-                    }
+        // ✅ OpenAI API 호출을 위한 데이터 준비
+        const formattedMessages = messages.map(msg => ({
+            role: "user",
+            content: `[${msg.senderName}] ${msg.content}`
+        }));
 
-                    const messages = chatRoom.messages;
-                    if (messages.length % 3 !== 0) {
-                        console.log("🟡 메시지가 3개 단위가 아닙니다. 피드백 스킵.");
-                        return;
-                    }
+        // ✅ OpenAI API 호출 및 피드백 제공
+        const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+                { role: "system", content: "이들의 대화를 보고 따끔한 연애 조언을 해줘. 한줄로만." },
+                ...formattedMessages.slice(-5)
+            ],
+            max_tokens: 100
+        });
 
-                    const formattedMessages = messages.map(msg => ({
-                        role: "user",
-                        content: `[${msg.senderName}] ${msg.content}`
-                    }));
-
-                    try {
-                        const completion = await openai.chat.completions.create({
-                            model: "gpt-3.5-turbo",
-                            messages: [
-                                { role: "system", content: "이들의 대화를 보고 따끔한 연애 조언을 해줘." },
-                                ...formattedMessages.slice(-5)
-                            ],
-                            max_tokens: 100
-                        });
-
-                        if (completion.choices && completion.choices.length > 0) {
-                            const aiResponse = completion.choices[0].message.content;
-                            console.log("✅ AI 피드백 제공 완료:", aiResponse);
-                            
-                            // ✅ Change Stream을 닫고, 재시작
-                            changeStream.close();
-                            res.status(200).json({ feedback: aiResponse });
-                            
-                            // ✅ Change Stream 재시작 (중요)
-                            startChangeStream();
-                        } else {
-                            console.error("❌ OpenAI 응답이 비어있습니다.");
-                            changeStream.close();
-                        }
-                    } catch (error) {
-                        console.error("❌ OpenAI 호출 중 오류:", error);
-                        changeStream.close();
-                    }
-                }
-            });
-
-            // ✅ 타임아웃 설정 (30초 후 재시작)
-            setTimeout(() => {
-                if (!res.headersSent) {
-                    console.log("⏳ 타임아웃: Change Stream 재시작");
-                    changeStream.close();
-                    startChangeStream();
-                }
-            }, 1000);
-        };
-
-        // ✅ Change Stream 시작
-        startChangeStream();
-        res.status(200).json({ message: "Change Stream이 활성화되었습니다." });
-
+        if (completion.choices && completion.choices.length > 0) {
+            const aiResponse = completion.choices[0].message.content;
+            console.log("✅ AI 피드백 제공 완료:", aiResponse);
+            res.status(200).json({ feedback: aiResponse });
+        } else {
+            console.error("❌ OpenAI 응답이 비어있습니다.");
+        }
     } catch (error) {
         console.error("❌ AI 피드백 생성 실패:", error);
-        if (!res.headersSent) {
-            res.status(500).json({ error: "AI 피드백 생성 중 오류가 발생했습니다." });
-        }
+        res.status(500).json({ error: "AI 피드백 생성 중 오류가 발생했습니다." });
     }
 };
 
